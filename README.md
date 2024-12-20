@@ -2,10 +2,17 @@
 
 [![.NET](https://github.com/markjulmar/CreateSoundRoomSchedule/actions/workflows/dotnet.yml/badge.svg)](https://github.com/markjulmar/CreateSoundRoomSchedule/actions/workflows/dotnet.yml)
 
-This .NET Core application reads data from Planning Center Online for all planned services in a specific quarter. It generates an Excel spreadsheet containing a 3-month calendar to identify the people assigned to manage A/V weekly. It also pulls public holidays and includes them in the calendar data.
+## Overview
+The `CreateSoundRoomSchedule` project is a C# application to generate an Excel spreadsheet with the planned services for for a church. It interacts with the [Planning Center](https://www.planningcenter.com/) API to create a three-month calendar set for a given quarter. This .NET Core application reads data from Planning Center Online for all planned services in a specific quarter. It generates an Excel spreadsheet containing a 3-month calendar to identify the people assigned to manage A/V weekly. It also pulls public holidays and includes them in the calendar data.
+
+![Sample calendar in Excel](./images/calendar-example.png)
+
+### Dependencies
+- **Language**: C#
+- **Framework**: .NET 8.0
+- **Main Libraries**: [EPPlus](https://www.epplussoftware.com/)
 
 ## Requirements
-
 Add a .NET User Secret with a Client Id and Client Secret obtained from the Planning Center development dashboard.
 
 | Key | Description |
@@ -14,7 +21,6 @@ Add a .NET User Secret with a Client Id and Client Secret obtained from the Plan
 | `PlanningCenter:clientSecret` | Corresponding PAT secret for the assigned client id. |
 
 ## Running the app
-
 Run the app from the console:
 
 ```console
@@ -28,7 +34,3 @@ dotnet run 2/1/2025
 ```
 
 This command would create a Q1 2025 calendar spanning January - March.
-
-## Dependencies
-
-The application generates an Excel spreadsheet using [EPPlus](https://www.epplussoftware.com/).

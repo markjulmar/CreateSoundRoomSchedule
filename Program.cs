@@ -59,29 +59,28 @@ package.Workbook.Properties.Created = DateTime.Now;
 
 // Add a sheet.
 var worksheet = package.Workbook.Worksheets.Add(quarter);
-worksheet.PrinterSettings.TopMargin = .7M;
-worksheet.PrinterSettings.LeftMargin = .75M;
-worksheet.PrinterSettings.BottomMargin = .7M;
-worksheet.PrinterSettings.RightMargin = .75M;
-worksheet.PrinterSettings.HeaderMargin = .5M;
-worksheet.PrinterSettings.FooterMargin = .5M;
-worksheet.Cells.Style.Font.Name = "Arial";
+worksheet.PrinterSettings.TopMargin = Constants.TopBottomMargin;
+worksheet.PrinterSettings.LeftMargin = Constants.LeftRightMargin;
+worksheet.PrinterSettings.BottomMargin = Constants.TopBottomMargin;
+worksheet.PrinterSettings.RightMargin = Constants.LeftRightMargin;
+worksheet.PrinterSettings.HeaderMargin = Constants.HeaderFooterMargin;
+worksheet.PrinterSettings.FooterMargin = Constants.HeaderFooterMargin;
+worksheet.Cells.Style.Font.Name = Constants.FontFamily;
 
-// Set pagebreak after column 7.
-worksheet.Columns[7].PageBreak = true;
+// Set pagebreak after last column.
+worksheet.Columns[Constants.MaxColumns].PageBreak = true;
 
 // Add each month.
-int row = 1;
+int row = Constants.FirstRow;
 for (int i = 0; i < 3; i++)
 {
     var month = new DateOnly(date.Year, date.Month + i, 1);
     AddMonth(worksheet, month, holidays, services, ref row);
 }
 
-// Autofit columns.
-worksheet.Cells.AutoFitColumns(22);
-
-worksheet.PrinterSettings.PrintArea = worksheet.Cells[1, 1, row, 7];
+// Auto-fit columns and set print area.
+worksheet.Cells.AutoFitColumns(Constants.MinimumCellWidth);
+worksheet.PrinterSettings.PrintArea = worksheet.Cells[Constants.FirstRow, Constants.FirstColumn, row, Constants.MaxColumns];
 
 // Save the package
 package.Save();
@@ -94,17 +93,17 @@ static void AddMonth(ExcelWorksheet ws, DateOnly month, List<Holiday> holidays, 
 {
     var title = $"{month.ToString("MMMM yyyy")} Trinity Fellowship Church A/V Schedule";
 
-    ws.Rows[row].Height = 55;
+    ws.Rows[row].Height = Constants.HeaderRowHeight;
     
     // First row has the title - merged across seven columns, centered.
-    using (var range = ws.Cells[row, 1, row, 7])
+    using (var range = ws.Cells[row, Constants.FirstColumn, row, Constants.MaxColumns])
     {
         range.Merge = true;
         range.Style.Font.Bold = true;
         range.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
         range.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
         range.Style.Font.Color.SetColor(Color.Red);
-        range.Style.Font.Size = 20;
+        range.Style.Font.Size = Constants.HeaderFontSize;
     }
     
     ws.Cells[row,1].Value = title;
@@ -114,7 +113,7 @@ static void AddMonth(ExcelWorksheet ws, DateOnly month, List<Holiday> holidays, 
     AddDaysOfWeekHeader(ws, ref row);
     AddCalendar(ws, month, holidays, services, ref row);
     
-    // Set a pagebreak.
+    // Set a page-break.
     ws.Row(row-1).PageBreak = true;
 }
 
@@ -122,14 +121,14 @@ static void AddDaysOfWeekHeader(ExcelWorksheet ws, ref int row)
 {
     var daysOfWeek = Enum.GetValues<DayOfWeek>();
 
-    ws.Rows[row].Height = 40;
+    ws.Rows[row].Height = Constants.DaysOfWeekHeaderRowHeight;
     
     for (int i = 0; i < daysOfWeek.Length; i++)
     {
         var cell = ws.Cells[row, i + 1];
         cell.Style.Border.BorderAround(ExcelBorderStyle.Thin);
         cell.Style.Font.Bold = true;
-        cell.Style.Font.Size = 12;
+        cell.Style.Font.Size = Constants.DaysOfWeekFontSize;
         cell.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
         cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
         cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
@@ -149,23 +148,23 @@ static void AddCalendar(ExcelWorksheet ws, DateOnly month, List<Holiday> holiday
     Debug.Assert(column >= 0);
     
     // Calculate the total number of rows needed for the calendar
-    int totalRows = (daysInMonth + column - 1) / 7 + 1;
+    int totalRows = (daysInMonth + column - 1) / Constants.MaxColumns + 1;
     int startRow = row;
     
     for (int i = 1; i <= daysInMonth; i++)
     {
-        ws.Rows[row].Height = 85;
+        ws.Rows[row].Height = Constants.DayCellHeight;
         
         var day = new DateOnly(month.Year, month.Month, i);
         var holidayName = holidays.FirstOrDefault(h => h.Date == day)?.Name ?? "";
-        if (holidayName.Length > 20)
-            holidayName = holidayName[..20] + "..";
+        if (holidayName.Length > Constants.MaxHolidayLength)
+            holidayName = holidayName[..Constants.MaxHolidayLength] + "..";
 
         var service = services.FirstOrDefault(s => s.Date == day);
         
         var cell = ws.Cells[row, column];
         cell.Style.Border.BorderAround(ExcelBorderStyle.Thin);
-        cell.Style.Font.Size = 10;
+        cell.Style.Font.Size = Constants.DayCellsFontSize;
         cell.Style.WrapText = true;
         cell.Style.Indent = 1;
         cell.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
@@ -181,9 +180,9 @@ static void AddCalendar(ExcelWorksheet ws, DateOnly month, List<Holiday> holiday
         {
             var sb = new StringBuilder(i.ToString()).AppendLine()
                 .AppendLine(holidayName)
-                .AppendLine($"(sound) {service.FindRole("sound")}")
-                .AppendLine($"(stream) {service.FindRole("stream")}")
-                .AppendLine($"(slides) {service.FindRole("slides")}");
+                .AppendLine($"{Constants.SoundPrefix}{service.FindRole("sound")}")
+                .AppendLine($"{Constants.StreamPrefix}{service.FindRole("stream")}")
+                .AppendLine($"{Constants.SlidesPrefix}{service.FindRole("slides")}");
             cell.Value = sb.ToString();
         }
         else if (!string.IsNullOrEmpty(holidayName))
@@ -195,9 +194,9 @@ static void AddCalendar(ExcelWorksheet ws, DateOnly month, List<Holiday> holiday
             cell.Value = i;
         }
 
-        if (++column > 7)
+        if (++column > Constants.MaxColumns)
         {
-            column = 1;
+            column = Constants.FirstColumn;
             row++;
         }
     }
@@ -205,10 +204,9 @@ static void AddCalendar(ExcelWorksheet ws, DateOnly month, List<Holiday> holiday
     // Apply border to all cells in the calendar range
     for (int r = startRow; r < startRow + totalRows; r++)
     {
-        for (int c = 1; c <= 7; c++)
+        for (int c = Constants.FirstColumn; c <= Constants.MaxColumns; c++)
         {
-            var cell = ws.Cells[r, c];
-            cell.Style.Border.BorderAround(ExcelBorderStyle.Thin);
+            ws.Cells[r, c].Style.Border.BorderAround(ExcelBorderStyle.Thin);
         }
     }
 
