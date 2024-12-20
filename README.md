@@ -1,5 +1,7 @@
 # CreateSoundRoomSchedule
 
+[![.NET](https://github.com/markjulmar/CreateSoundRoomSchedule/actions/workflows/dotnet.yml/badge.svg)](https://github.com/markjulmar/CreateSoundRoomSchedule/actions/workflows/dotnet.yml)
+
 This .NET Core application reads data from Planning Center Online for all planned services in a specific quarter. It generates an Excel spreadsheet containing a 3-month calendar to identify the specific people assigned to manage A/V each week. It also pulls public holidays and includes them in the calendar data.
 
 ## Running the app
