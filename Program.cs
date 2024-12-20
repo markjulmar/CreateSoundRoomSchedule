@@ -22,21 +22,23 @@ ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 if (args.Length != 1 
     || !DateOnly.TryParse(args[0], out var date))
 {
-    var now = DateTime.Now;
-    var month = now.Month <= 3 ? 4 : now.Month <= 6 ? 7 : now.Month <= 9 ? 10 : 1;
-    date = new DateOnly(month==1?now.Year+1:now.Year, month, 1);
+    date = DateOnly.FromDateTime(DateTime.Now);
 }
 
-Console.WriteLine($"CreateSoundRoomSchedule for {date.ToShortDateString()}");
+// Push to the nearest quarter.
+var startOfQuarterMonth = date.Month <= 3 ? 1 : date.Month <= 6 ? 4 : date.Month <= 9 ? 7 : 10;
+date = new DateOnly(date.Year, startOfQuarterMonth, 1);
+var quarter = $"{date:yyyy}-Q{(date.Month-1) / 3 + 1}";
+
+Console.WriteLine($"CreateSoundRoomSchedule for {quarter}");
 Console.WriteLine();
 Console.WriteLine("Retrieving data from Planning Center Online...");
 
-var services = await planningCenter.GetServicesAsync(date, date.AddMonths(3)).ToListAsync();
+var services = await planningCenter.GetServicesAsync(date, date.AddMonths(3));
 Console.WriteLine($"... found {services.Count} services.");
 Console.WriteLine();
 Console.WriteLine("Creating Excel file...");
 
-var quarter = $"{date:yyyy}-Q{date.Month / 4 + 1}";
 var filename = $"TFC_SoundRoom_Schedule_{quarter}.xlsx";
 var fullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), filename);
 if (File.Exists(fullPath))
@@ -156,7 +158,7 @@ static void AddCalendar(ExcelWorksheet ws, DateOnly month, List<Holiday> holiday
         ws.Rows[row].Height = Constants.DayCellHeight;
         
         var day = new DateOnly(month.Year, month.Month, i);
-        var holidayName = holidays.FirstOrDefault(h => h.Date == day)?.Name ?? "";
+        var holidayName = (holidays.FirstOrDefault(h => h.Date == day)?.Name ?? "").Trim();
         if (holidayName.Length > Constants.MaxHolidayLength)
             holidayName = holidayName[..Constants.MaxHolidayLength] + "..";
 

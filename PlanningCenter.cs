@@ -1,3 +1,4 @@
+using System.Data;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -10,31 +11,37 @@ public sealed class TeamMember(string name, string role)
     public string Name => name;
 }
 
-public sealed class Service
+public sealed class Service(string id, DateOnly date)
 {
-    public DateOnly Date { get; init; }
-    public List<TeamMember>? Team { get; init; }
-    public string FindRole(string sound) => Team?.FirstOrDefault(member => member.Role == sound)?.Name ?? "";
+    public string Id => id;
+    public DateOnly Date => date;
+    public List<TeamMember>? Team { get; set; }
+    public string FindRole(string sound) => Team?.FirstOrDefault(member => member.Role == sound)?.Name ?? "unassigned";
 }
 
 public sealed class PlanningCenter(string? clientId, string? clientSecret)
 {
+    private const string LookForServiceTypeName = "TFC Worship Service";
     private const string BaseUrl = "https://api.planningcenteronline.com/";
 
-    public async IAsyncEnumerable<Service> GetServicesAsync(DateOnly startDate, DateOnly endDate)
+    public async Task<List<Service>> GetServicesAsync(DateOnly startDate, DateOnly endDate)
     {
         if (string.IsNullOrEmpty(clientId)
             || string.IsNullOrEmpty(clientSecret))
             throw new InvalidOperationException("Missing Client Id or Client Secret.");
         
-        int serviceTypeId = await GetWorshipServiceType();
-        if (serviceTypeId == 0) 
-            yield break;
+        int serviceTypeId = await GetWorshipServiceType(LookForServiceTypeName);
+        if (serviceTypeId == 0)
+            return [];
 
+        var services = new List<Service>();
+        
         var url = $"services/v2/service_types/{serviceTypeId}/plans?offset=0&limit=100&order=-sort_date";
-        while (true)
+        bool done = false;
+        while (!done)
         {
-            if (string.IsNullOrEmpty(url)) yield break;
+            if (string.IsNullOrEmpty(url)) 
+                break;
             
             var jsonResponse = await CallAsync(url);
             using var doc = JsonDocument.Parse(jsonResponse);
@@ -42,26 +49,34 @@ public sealed class PlanningCenter(string? clientId, string? clientSecret)
             url = doc.RootElement.GetProperty("links").GetProperty("next").GetString()?[BaseUrl.Length..];            
             var data = doc.RootElement.GetProperty("data");
             if (!data.EnumerateArray().Any())
-                yield break;
+                break;
             
-            foreach (var element in data.EnumerateArray().Where(e => e.GetProperty("type").GetString() == "Plan"))
+            foreach (var element in data.EnumerateArray()
+                         .Where(e => e.GetProperty("type").GetString() == "Plan"))
             {
                 var id = element.GetProperty("id").GetString();
                 if (string.IsNullOrEmpty(id))
                     continue;
                 
                 var date = DateOnly.FromDateTime(element.GetProperty("attributes").GetProperty("sort_date").GetDateTime());
-                if (date > endDate)
-                    continue;
-                if (date < startDate) 
-                    yield break;
-                yield return new Service
+                if (date > endDate) continue;
+                if (date < startDate)
                 {
-                    Date = date,
-                    Team = await GetTeamAsync(serviceTypeId, id)
-                };
+                    done = true;
+                    break;
+                }
+
+                services.Add(new Service(id, date));
             }
         }
+        
+        var tasks = services.Select(async service =>
+        {
+            service.Team = await GetTeamAsync(serviceTypeId, service.Id);
+            return service;
+        });
+
+        return (await Task.WhenAll(tasks)).ToList();
     }
 
     private async Task<List<TeamMember>?> GetTeamAsync(int serviceTypeId, string id)
@@ -79,7 +94,7 @@ public sealed class PlanningCenter(string? clientId, string? clientSecret)
             .ToList();
     }
 
-    private async Task<int> GetWorshipServiceType()
+    private async Task<int> GetWorshipServiceType(string serviceTypeName)
     {
         var jsonResponse = await CallAsync("services/v2/service_types");
         using var doc = JsonDocument.Parse(jsonResponse);
@@ -88,7 +103,7 @@ public sealed class PlanningCenter(string? clientId, string? clientSecret)
         // Find the item with the name "TFC Worship Service"
         return (from item in data.EnumerateArray() 
             let attributes = item.GetProperty("attributes") 
-            where attributes.GetProperty("name").GetString() == "TFC Worship Service" 
+            where attributes.GetProperty("name").GetString() == serviceTypeName 
             select int.TryParse(item.GetProperty("id").GetString(), out var result) ? result : 0)
         .FirstOrDefault();
     }
@@ -99,6 +114,14 @@ public sealed class PlanningCenter(string? clientId, string? clientSecret)
         var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}"));
         using var client = new HttpClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
-        return await client.GetStringAsync(url);
+
+        try
+        {
+            return await client.GetStringAsync(url);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new Exception("Error calling Planning Center API", ex);
+        }
     }
 }
