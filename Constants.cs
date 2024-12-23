@@ -1,5 +1,3 @@
-using System.Drawing;
-
 namespace CreateSoundRoomSchedule;
 
 public static class Constants

@@ -1,4 +1,3 @@
-using System.Data;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -29,35 +28,34 @@ public sealed class PlanningCenter(string? clientId, string? clientSecret)
         if (string.IsNullOrEmpty(clientId)
             || string.IsNullOrEmpty(clientSecret))
             throw new InvalidOperationException("Missing Client Id or Client Secret.");
-        
+
         int serviceTypeId = await GetWorshipServiceType(LookForServiceTypeName);
         if (serviceTypeId == 0)
             return [];
 
         var services = new List<Service>();
-        
         var url = $"services/v2/service_types/{serviceTypeId}/plans?offset=0&limit=100&order=-sort_date";
         bool done = false;
         while (!done)
         {
-            if (string.IsNullOrEmpty(url)) 
+            if (string.IsNullOrEmpty(url))
                 break;
-            
+
             var jsonResponse = await CallAsync(url);
             using var doc = JsonDocument.Parse(jsonResponse);
-            
-            url = doc.RootElement.GetProperty("links").GetProperty("next").GetString()?[BaseUrl.Length..];            
+
+            url = doc.RootElement.GetProperty("links").GetProperty("next").GetString()?[BaseUrl.Length..];
             var data = doc.RootElement.GetProperty("data");
             if (!data.EnumerateArray().Any())
                 break;
-            
+
             foreach (var element in data.EnumerateArray()
                          .Where(e => e.GetProperty("type").GetString() == "Plan"))
             {
                 var id = element.GetProperty("id").GetString();
                 if (string.IsNullOrEmpty(id))
                     continue;
-                
+
                 var date = DateOnly.FromDateTime(element.GetProperty("attributes").GetProperty("sort_date").GetDateTime());
                 if (date > endDate) continue;
                 if (date < startDate)
@@ -69,7 +67,7 @@ public sealed class PlanningCenter(string? clientId, string? clientSecret)
                 services.Add(new Service(id, date));
             }
         }
-        
+
         var tasks = services.Select(async service =>
         {
             service.Team = await GetTeamAsync(serviceTypeId, service.Id);
@@ -101,13 +99,13 @@ public sealed class PlanningCenter(string? clientId, string? clientSecret)
         var data = doc.RootElement.GetProperty("data");
 
         // Find the item with the name "TFC Worship Service"
-        return (from item in data.EnumerateArray() 
-            let attributes = item.GetProperty("attributes") 
-            where attributes.GetProperty("name").GetString() == serviceTypeName 
+        return (from item in data.EnumerateArray()
+            let attributes = item.GetProperty("attributes")
+            where attributes.GetProperty("name").GetString() == serviceTypeName
             select int.TryParse(item.GetProperty("id").GetString(), out var result) ? result : 0)
         .FirstOrDefault();
     }
-    
+
     private async Task<string> CallAsync(string segment)
     {
         var url = BaseUrl + segment;

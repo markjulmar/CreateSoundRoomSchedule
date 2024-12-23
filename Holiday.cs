@@ -14,13 +14,13 @@ public sealed class Holiday
         using var client = new HttpClient();
         var response = await client.GetStringAsync(url);
         var results = JsonSerializer.Deserialize<List<Holiday>>(response) ?? [];
-        
+
         // Add a few additional holidays.
         var goodFriday = results.FirstOrDefault(h => h.Name == "Good Friday");
         if (goodFriday != null)
         {
             var easter = goodFriday.Date.AddDays(2);
-            results.Add(new Holiday { Date = goodFriday.Date.AddDays(-1), Name = "Maunday Thursday" });
+            results.Add(new Holiday { Date = goodFriday.Date.AddDays(-1), Name = "Maundy Thursday" });
             results.Add(new Holiday { Date = easter, Name = "Easter Sunday" });
 
             var ashWednesday = easter.AddDays((-1 * 7 * 6) - 4);
