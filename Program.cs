@@ -91,9 +91,8 @@ static ExcelWorksheet CreateWorksheet(ExcelPackage package, string title)
     worksheet.PrinterSettings.HeaderMargin = Constants.HeaderFooterMargin;
     worksheet.PrinterSettings.FooterMargin = Constants.HeaderFooterMargin;
 
-    worksheet.PrinterSettings.FitToPage = true;
-    //worksheet.PrinterSettings.FitToWidth = 1;
-    //worksheet.PrinterSettings.FitToHeight = 1;
+    worksheet.PrinterSettings.FitToWidth = 1;
+    worksheet.PrinterSettings.FitToHeight = 1;
     worksheet.PrinterSettings.Orientation = eOrientation.Landscape;
     worksheet.PrinterSettings.HorizontalCentered = true;
     worksheet.PrinterSettings.VerticalCentered = true;
