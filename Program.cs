@@ -146,7 +146,7 @@ static void AddDaysOfWeekHeader(ExcelWorksheet ws, ref int row)
         cell.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
         cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
         cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
-        cell.Style.Fill.SetBackground(i == 0 ? Color.LightBlue : Color.LightGray);
+        cell.Style.Fill.BackgroundColor.SetColor(i == 0 ? Color.LightBlue : Color.LightGray);
         cell.Style.Locked = true;
 
         cell.Value = daysOfWeek[i].ToString();
@@ -185,7 +185,7 @@ static void AddCalendar(ExcelWorksheet ws, DateOnly month, List<Holiday> holiday
         cell.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
         cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
         cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
-        cell.Style.Fill.SetBackground(day.DayOfWeek switch {
+        cell.Style.Fill.BackgroundColor.SetColor(day.DayOfWeek switch {
                 DayOfWeek.Sunday => Color.LightYellow,
                 DayOfWeek.Wednesday => Color.LightCyan,
                 _ => Color.White
