@@ -2,7 +2,7 @@ namespace CreateSoundRoomSchedule;
 
 public static class Constants
 {
-    public const decimal TopBottomMargin = 0.75m;
+    public const decimal TopBottomMargin = 0.5m;
     public const decimal LeftRightMargin = 0.25m;
     public const decimal HeaderFooterMargin = 0.3m;
     public const string FontFamily = "Arial";
