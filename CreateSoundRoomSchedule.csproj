@@ -8,10 +8,13 @@
         <UserSecretsId>264f11e8-c633-4cb1-a9ca-aab85e784b5f</UserSecretsId>
     </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Include="EPPlus" Version="7.5.2" />
-      <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="EPPlus" Version="7.5.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
 
 </Project>
