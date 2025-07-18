@@ -28,7 +28,7 @@ if (args.Length != 1
 // Push to the nearest quarter.
 var startOfQuarterMonth = date.Month <= 3 ? 1 : date.Month <= 6 ? 4 : date.Month <= 9 ? 7 : 10;
 date = new DateOnly(date.Year, startOfQuarterMonth, 1);
-var quarter = $"{date:yyyy}-Q{(date.Month-1) / 3 + 1}";
+var quarter = CalculateQuarter(date);
 
 Console.WriteLine($"CreateSoundRoomSchedule for {quarter}");
 Console.WriteLine();
