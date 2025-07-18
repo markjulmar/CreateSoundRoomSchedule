@@ -93,6 +93,7 @@ static ExcelWorksheet CreateWorksheet(ExcelPackage package, string title)
 
     worksheet.PrinterSettings.FitToWidth = 1;
     worksheet.PrinterSettings.FitToHeight = 1;
+    worksheet.PrinterSettings.FitToPage = true;
     worksheet.PrinterSettings.Orientation = eOrientation.Landscape;
     worksheet.PrinterSettings.HorizontalCentered = true;
     worksheet.PrinterSettings.VerticalCentered = true;
