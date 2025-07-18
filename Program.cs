@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.Text;
 using CreateSoundRoomSchedule;
 using Microsoft.Extensions.Configuration;
@@ -19,9 +20,11 @@ var planningCenter = new PlanningCenter(clientId, clientSecret);
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
 // Missing date - use next quarter
-if (args.Length != 1 
-    || !DateOnly.TryParse(args[0], out var date))
+if (args.Length != 1
+    || !DateOnly.TryParseExact(args[0], "M/d/yyyy", CultureInfo.InvariantCulture,
+        DateTimeStyles.None, out var date))
 {
+    Console.Error.WriteLine("Invalid date format. Expected M/d/yyyy. Using today's date.");
     date = DateOnly.FromDateTime(DateTime.Now);
 }
 
