@@ -6,7 +6,7 @@ namespace CreateSoundRoomSchedule;
 
 public sealed class TeamMember(string name, string role)
 {
-    public string Role => role.ToLower();
+public string Role => role.ToLowerInvariant();
     public string Name => name;
 }
 
