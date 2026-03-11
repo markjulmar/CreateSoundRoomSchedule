@@ -199,7 +199,7 @@ static void AddCalendar(ExcelWorksheet ws, DateOnly month, List<Holiday> holiday
             var sb = new StringBuilder(i.ToString()).AppendLine()
                 .AppendLine(holidayName)
                 .AppendLine($"{Constants.SoundPrefix}{service.FindRole("sound")}")
-                .AppendLine($"{Constants.StreamPrefix}{service.FindRole("stream")}")
+                //.AppendLine($"{Constants.StreamPrefix}{service.FindRole("stream")}")
                 .AppendLine($"{Constants.SlidesPrefix}{service.FindRole("slides")}");
             cell.Value = sb.ToString();
         }
