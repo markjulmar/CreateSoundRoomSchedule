@@ -20,6 +20,10 @@ public static class Constants
     public const float DaysOfWeekFontSize = 14;
     public const float DayCellsFontSize = 14;
 
+    public const string SoundRoleName = "sound";
+    public const string StreamRoleName = "stream";
+    public const string SlidesRoleName = "slides";
+
     public const string SoundPrefix = "(sound) ";
     public const string StreamPrefix = "(stream) ";
     public const string SlidesPrefix = "(slides) ";

@@ -1,78 +1,11 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Project-specific guidance for this repository lives in [AGENTS.md](./AGENTS.md).
 
-## Common Commands
+Use [AGENTS.md](./AGENTS.md) as the canonical source for:
+- build and test commands
+- architecture notes
+- configuration requirements
+- maintenance guidance
 
-### Building and Testing
-```bash
-# Restore dependencies
-dotnet restore
-
-# Build the project
-dotnet build
-
-# Run tests
-dotnet test
-
-# Run the application (uses next quarter by default)
-dotnet run
-
-# Run the application for a specific date
-dotnet run 2/1/2025
-```
-
-### Testing Individual Components
-```bash
-# Run specific test file
-dotnet test tests/CreateSoundRoomSchedule.Tests/QuarterTests.cs
-
-# Run tests with verbose output
-dotnet test --verbosity normal
-```
-
-## Architecture Overview
-
-This is a .NET 8 console application that generates Excel calendars for church A/V scheduling. The application:
-
-1. **Fetches service data** from Planning Center API using OAuth2 authentication
-2. **Generates quarterly calendars** spanning 3 months with A/V team assignments
-3. **Includes holiday information** from external API with custom church holidays
-4. **Outputs Excel files** with print-optimized formatting to the desktop
-
-### Key Components
-
-- **Program.cs**: Main entry point and Excel generation logic
-- **PlanningCenter.cs**: API client for Planning Center services and team data
-- **QuarterCalculator.cs**: Quarter calculation utilities (partial class of Program)
-- **Holiday.cs**: Public holiday API integration with church-specific additions
-- **Constants.cs**: Excel formatting constants and configuration values
-
-### Data Flow
-1. Parse date argument or use current date to determine quarter
-2. Fetch services from Planning Center API for the quarter date range
-3. Retrieve team assignments for each service (sound, stream, slides roles)
-4. Fetch public holidays and add church-specific dates
-5. Generate Excel workbook with one worksheet per month
-6. Apply print settings optimized for landscape printing
-
-## Configuration
-
-### User Secrets
-The application requires Planning Center API credentials stored as user secrets:
-- `PlanningCenter:clientId` - Planning Center API client ID
-- `PlanningCenter:clientSecret` - Planning Center API client secret
-
-### External Dependencies
-- **EPPlus**: Excel file generation (NonCommercial license)
-- **Planning Center API**: Service and team data
-- **date.nager.at**: Public holiday data
-
-## Testing
-
-Tests use xUnit framework and focus on:
-- Quarter calculation logic
-- Print setting constants validation
-- Core business logic verification
-
-The test project references the main project to test internal methods.
+This project currently targets .NET 10.

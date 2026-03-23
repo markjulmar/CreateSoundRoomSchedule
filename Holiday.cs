@@ -5,15 +5,29 @@ namespace CreateSoundRoomSchedule;
 
 public sealed class Holiday
 {
+    private static readonly HttpClient HttpClient = new()
+    {
+        Timeout = TimeSpan.FromSeconds(15)
+    };
+
     [JsonPropertyName("date")] public DateOnly Date { get; set; }
     [JsonPropertyName("name")] public string Name { get; set; } = "";
 
     public static async Task<IEnumerable<Holiday>> GetAllAsync(int year)
     {
         var url = $"https://date.nager.at/api/v3/PublicHolidays/{year}/US";
-        using var client = new HttpClient();
-        var response = await client.GetStringAsync(url);
-        var results = JsonSerializer.Deserialize<List<Holiday>>(response) ?? [];
+        List<Holiday> results;
+
+        try
+        {
+            var response = await HttpClient.GetStringAsync(url);
+            results = JsonSerializer.Deserialize<List<Holiday>>(response) ?? [];
+        }
+        catch (HttpRequestException)
+        {
+            Console.Error.WriteLine("Unable to retrieve holidays from the public holiday API. Continuing without them.");
+            results = [];
+        }
 
         // Add a few additional holidays.
         var goodFriday = results.FirstOrDefault(h => h.Name == "Good Friday");

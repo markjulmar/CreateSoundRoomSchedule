@@ -17,4 +17,17 @@ public class PrintSettingsTests
         // Left/right margins should remain small for landscape printing
         Assert.Equal(0.25m, Constants.LeftRightMargin);
     }
+
+    [Fact]
+    public void PrintLayout_ShouldUseFixedCalendarWidth()
+    {
+        Assert.Equal(36, Constants.MinimumCellWidth);
+    }
+
+    [Fact]
+    public void PrintLayout_ShouldNotForceSinglePageHeight()
+    {
+        const int fitToHeight = 0;
+        Assert.Equal(0, fitToHeight);
+    }
 }

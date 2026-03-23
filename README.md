@@ -9,7 +9,7 @@ The `CreateSoundRoomSchedule` project is a C# application to generate an Excel s
 
 ### Dependencies
 - **Language**: C#
-- **Framework**: .NET 8.0
+- **Framework**: .NET 10.0
 - **Main Libraries**: [EPPlus](https://www.epplussoftware.com/)
 
 ## Requirements
@@ -27,10 +27,15 @@ Run the app from the console:
 dotnet run
 ```
 
-By default, it generates a calendar for the _next_ quarter. However, you can give it a date as an optional parameter, and it will generate the calendar for whatever quarter the date falls in. The resulting file will be placed onto the desktop and named **TFC_SoundRoom_Schedule_YYYY-QX** where `YYYY` will be the year, and `QX` will be the quarter. If a file with that name exists, it will be replaced.
+By default, it generates a calendar for the _next_ quarter. You can also provide a single date argument in `M/d/yyyy` format, and the app will generate the calendar for the quarter containing that date. The resulting file is written to the desktop and named **TFC_SoundRoom_Schedule_YYYY-QX.xlsx**. If a file with that name already exists, it is replaced.
 
 ```console
 dotnet run 2/1/2025
 ```
 
 This command would create a Q1 2025 calendar spanning January - March.
+
+If the date argument is missing or invalid, the app falls back to the next quarter.
+
+## Output details
+The workbook contains one worksheet per month for the selected quarter. Each sheet is formatted for landscape printing and is scaled to fit the page width without forcing the month onto a single page vertically. This keeps the calendar easier to read when printed.
