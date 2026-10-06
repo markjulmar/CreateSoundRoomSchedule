@@ -103,7 +103,7 @@ public sealed class PlanningCenter : IDisposable
 
     private async Task<List<TeamMember>?> GetTeamAsync(int serviceTypeId, string id)
     {
-        var url = $"services/v2/service_types/{serviceTypeId}/plans/{id}/team_members";
+        var url = $"services/v2/service_types/{serviceTypeId}/plans/{id}/team_members?filter=not_declined";
         var jsonResponse = await CallAsync(url);
         using var doc = JsonDocument.Parse(jsonResponse);
         if (!doc.RootElement.TryGetProperty("data", out var data)
